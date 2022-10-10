@@ -176,7 +176,6 @@ const Model = types
     },
     toggleSelected() {
       if (self.parent?.readonly || self.annotation?.readonly) return;
-      console.log("choicesss self:", self);
       const choices = self.parent;
       const selected = self.sel;
 
@@ -343,7 +342,7 @@ const HtxChoices = observer(({ item }) => {
   
   const changeHandler = useCallback((ev) => {
     item.children.find((e)=>e.value === ev).toggleSelected();
-  }, [selected,item]);
+  }, [item]);
 
   return (
     <>
