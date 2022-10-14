@@ -1,5 +1,5 @@
-import React from "react";
-import { Form, Select } from "antd";
+import React,{ useState } from "react";
+import { Button, Form, Modal, Select } from "antd";
 import { observer } from "mobx-react";
 import { types } from "mobx-state-tree";
 
@@ -20,6 +20,7 @@ import "./Choices/Choises.styl";
 import "./Choice";
 import DynamicChildrenMixin from "../../mixins/DynamicChildrenMixin";
 import { FF_DEV_2007, FF_DEV_2007_DEV_2008, isFF } from "../../utils/feature-flags";
+import { MergeTopics } from "./MergeTopics";
 
 const { Option } = Select;
 
@@ -310,16 +311,41 @@ const ChoicesSelectLayout = observer(({ item }) => {
 });
 
 const HtxChoices = observer(({ item }) => {
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const showModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleOk = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleCancel = () => {
+    setIsModalOpen(false);
+  };
+
   return (
-    <Block name="choices" mod={{ hidden: !item.isVisible || !item.perRegionVisible(), layout: item.layout }}>
-      {item.layout === "select" ? (
-        <ChoicesSelectLayout item={item} />
-      ) : (
-        !isFF(FF_DEV_2007)
-          ? <Form layout={item.layout}>{Tree.renderChildren(item)}</Form> 
-          : Tree.renderChildren(item)
-      )}
-    </Block>
+    <>
+      <div style={{ position: "absolute",top:"8px",left:"380px" }}>
+        <Button type="primary" onClick={showModal}>
+          Merge Topics
+        </Button>
+      </div>
+      <Modal title="Merge Topics" visible={isModalOpen} footer={null} width={800} onCancel={handleCancel}>
+        <MergeTopics item={item}/>
+      </Modal>
+      <Block name="choices" mod={{ hidden: !item.isVisible || !item.perRegionVisible(), layout: item.layout }}>
+        {item.layout === "select" ? (
+          <ChoicesSelectLayout item={item} />
+        ) : (
+          !isFF(FF_DEV_2007)
+            ? <Form layout={item.layout}>{Tree.renderChildren(item)}</Form> 
+            : Tree.renderChildren(item)
+        )}
+      </Block>
+    </>
   );
 });
 
