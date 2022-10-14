@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Alert, Button, Form, Input, Select } from "antd";
-import "./MergeChoices/MergeChoices.styl";
 
 const { Option } = Select;
 
@@ -131,7 +130,7 @@ const MergeTopics = ({ item }) => {
             span: 16,
           }}
         >
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" style={{ marginRight:"8px" }}>
             Submit
           </Button>
           <Button htmlType="button" onClick={onReset}>
