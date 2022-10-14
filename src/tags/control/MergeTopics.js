@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Alert, Button, Form, Input, Select } from "antd";
-import "./MergeChoices/MergeChoices.css";
+import "./MergeChoices/MergeChoices.styl";
 
 const { Option } = Select;
 
