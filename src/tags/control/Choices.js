@@ -312,30 +312,11 @@ const ChoicesSelectLayout = observer(({ item }) => {
 
 const HtxChoices = observer(({ item }) => {
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const showModal = () => {
-    setIsModalOpen(true);
-  };
-
-  const handleOk = () => {
-    setIsModalOpen(false);
-  };
-
-  const handleCancel = () => {
-    setIsModalOpen(false);
-  };
+  
 
   return (
     <>
-      <div style={{ position: "absolute",top:"8px",left:"380px" }}>
-        <Button type="primary" onClick={showModal}>
-          Merge Topics
-        </Button>
-      </div>
-      <Modal title="Merge Topics" visible={isModalOpen} footer={null} width={800} onCancel={handleCancel}>
-        <MergeTopics item={item}/>
-      </Modal>
+      <MergeTopics item={item}/>
       <Block name="choices" mod={{ hidden: !item.isVisible || !item.perRegionVisible(), layout: item.layout }}>
         {item.layout === "select" ? (
           <ChoicesSelectLayout item={item} />
