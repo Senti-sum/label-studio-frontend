@@ -1,4 +1,4 @@
-import React from "react";
+import React,{ useCallback } from "react";
 import { Form, Select } from "antd";
 import { observer } from "mobx-react";
 import { types } from "mobx-state-tree";
@@ -174,7 +174,17 @@ const Model = types
       if (self.showinline === true) self.layout = "inline";
       if (self.showinline === false) self.layout = "vertical";
     },
+    toggleSelected() {
+      if (self.parent?.readonly || self.annotation?.readonly) return;
+      const choices = self.parent;
+      const selected = self.sel;
 
+      choices.shouldBeUnselected && choices.resetSelected?.();
+
+      self.setSelected(!selected);
+
+      choices.updateResult?.();
+    },
     needsUpdate() {
       if (self.result) self.setResult(self.result.mainValue);
       else self.setResult([]);
@@ -196,7 +206,14 @@ const Model = types
     updateFromResult(value) {
       self.setResult(Array.isArray(value) ? value : [value]);
     },
-
+    setSelected(val) {
+      self._sel = val;
+      if (!self.isLeaf) {
+        self.children.forEach((child)=>{
+          child.setSelected(val);
+        });
+      }
+    },
     // unselect only during choice toggle
     resetSelected() {
       self.selectedLabels.forEach(c => c.setSelected(false));
@@ -310,16 +327,45 @@ const ChoicesSelectLayout = observer(({ item }) => {
 });
 
 const HtxChoices = observer(({ item }) => {
+  const values = [];
+  
+  for(let i=0;i<item.children.length;i++){
+    values.push({ "value":item.children[i].value, "sel":item.children[i].sel });
+  }
+
+  const selected = [];
+
+  for(let i=0;i<item.children.length;i++){
+    if(values[i].sel)  
+      selected.push(values[i].value);
+  }
+  
+  const changeHandler = useCallback((ev) => {
+    item.children.find((e)=>e.value === ev).toggleSelected();
+  }, [item]);
+
   return (
-    <Block name="choices" mod={{ hidden: !item.isVisible || !item.perRegionVisible(), layout: item.layout }}>
-      {item.layout === "select" ? (
-        <ChoicesSelectLayout item={item} />
-      ) : (
-        !isFF(FF_DEV_2007)
-          ? <Form layout={item.layout}>{Tree.renderChildren(item)}</Form> 
-          : Tree.renderChildren(item)
-      )}
-    </Block>
+    <>
+      <Select
+        mode="multiple"
+        showArrow
+        style={{ width: "100%" }}
+        placeholder="Please select"
+        defaultValue={selected}
+        onSelect={changeHandler}
+        onDeselect={changeHandler}
+        options={values}
+      />
+      <Block name="choices" mod={{ hidden: !item.isVisible || !item.perRegionVisible(), layout: item.layout }}>
+        {item.layout === "select" ? (
+          <ChoicesSelectLayout item={item} />
+        ) : (
+          !isFF(FF_DEV_2007)
+            ? <Form layout={item.layout}>{Tree.renderChildren(item)}</Form> 
+            : Tree.renderChildren(item)
+        )}
+      </Block>
+    </>
   );
 });
 
