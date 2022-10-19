@@ -1,74 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable no-unused-vars */
-import External from "../core/External";
-import Messages from "../utils/messages";
-
-/**
- * Text
- */
-import { DialogueAnalysis } from "../examples/dialogue_analysis";
-import { NamedEntity } from "../examples/named_entity";
-import { References } from "../examples/references";
-import { Required } from "../examples/required";
-import { Sentiment } from "../examples/sentiment_analysis";
-import { Nested as NestedSimple } from "../examples/nested_choices";
-import { Nested } from "../examples/nested_choices/complicated";
-import { Dialogue } from "../examples/phrases";
-
-/**
- * Audio/Video
- */
-import { AudioClassification } from "../examples/audio_classification";
-import { AudioRegions } from "../examples/audio_regions";
-import { TranscribeAudio } from "../examples/transcribe_audio";
-import { VideoRectangles } from "../examples/video_bboxes";
-import { VideoClassification } from "../examples/video";
-import { VideoAudio } from "../examples/video_audio";
-
-/**
- * Image
- */
-import { ImageBbox } from "../examples/image_bbox";
-import { ImageBboxLarge } from "../examples/image_bbox_large";
-import { ImageKeyPoint } from "../examples/image_keypoints";
-import { ImageMultilabel } from "../examples/image_multilabel";
-import { ImageEllipselabels } from "../examples/image_ellipses";
-import { ImageOCR } from "../examples/image_ocr";
-import { ImagePolygons } from "../examples/image_polygons";
-import { ImageSegmentation } from "../examples/image_segmentation";
-import { ImageTools } from "../examples/image_tools";
-
-/**
- * HTML
- */
-import { HTMLDocument } from "../examples/html_document";
-import { Taxonomy } from "../examples/taxonomy";
-
-/**
- * RichText (HTML or plain text)
- */
-import { RichTextHtml } from "../examples/rich_text_html";
-import { RichTextPlain } from "../examples/rich_text_plain";
-import { RichTextPlainRemote } from "../examples/rich_text_plain_remote";
-
-/**
- * Different
- */
-import { DateTime } from "../examples/datetime";
-import { Pairwise } from "../examples/pairwise";
-import { Repeater } from "../examples/repeater";
-import { Table } from "../examples/table";
-import { TableCsv } from "../examples/table_csv";
-
-import { TimeSeries } from "../examples/timeseries";
-import { TimeSeriesSingle } from "../examples/timeseries_single";
-
-/**
- * Custom Data
- */
-// import { AllTypes } from "../examples/all_types";
-
-const data = VideoRectangles;
+import External from '../core/External';
+import Messages from '../utils/messages';
 
 function getData(task) {
   if (task && task.data) {
@@ -81,51 +12,27 @@ function getData(task) {
   return task;
 }
 
-/**
- * Get current config
- * @param {string} pathToConfig
- */
-async function getConfig(pathToConfig) {
-  const response = await fetch(pathToConfig);
-  const config = await response.text();
-
-  return config;
-}
-
-/**
- * Get custom config
- */
-async function getExample() {
-  const datatype = data;
-
-  const config = await getConfig(datatype.config);
-  const annotations = datatype.annotation.annotations;
-  const predictions = datatype.tasks[0].predictions;
-
-  const task = {
-    annotations,
-    predictions,
-    data: JSON.stringify(datatype.tasks[0].data),
+function getState(task) {
+  return {
+    annotations: task?.annotations,
+    completions: task?.completions,
+    predictions: task?.predictions,
   };
-
-  return { config, task, annotations, predictions };
 }
 
 /**
- * Function to return App element
+ * LS will render in this part
  */
 function rootElement(element) {
   let root;
 
-  if (typeof element === "string") {
+  if (typeof element === 'string') {
     root = document.getElementById(element);
   } else {
     root = element;
   }
 
-  root.innerHTML = "";
-
-  root.style.width = "auto";
+  root.innerHTML = '';
 
   return root;
 }
@@ -135,19 +42,32 @@ function rootElement(element) {
  * @param {object} params
  */
 function configureApplication(params) {
+  // callbacks for back compatibility
+  const osCB = params.submitAnnotation || params.onSubmitAnnotation;
+  const ouCB = params.updateAnnotation || params.onUpdateAnnotation;
+  const odCB = params.deleteAnnotation || params.onDeleteAnnotation;
 
   const options = {
+    // communication with the server
+    // fetch: params.fetch || Requests.fetcher,
+    // patch: params.patch || Requests.patch,
+    // post: params.post || Requests.poster,
+    // remove: params.remove || Requests.remover,
+
+    // communication with the user
     settings: params.settings || {},
-    alert: m => console.log(m), // Noop for demo: window.alert(m)
+    alert: (m) => console.log(m), // Noop for demo: window.alert(m)
     messages: { ...Messages, ...params.messages },
-    onSubmitAnnotation: params.onSubmitAnnotation ? params.onSubmitAnnotation : External.onSubmitAnnotation,
-    onUpdateAnnotation: params.onUpdateAnnotation ? params.onUpdateAnnotation : External.onUpdateAnnotation,
-    onDeleteAnnotation: params.onDeleteAnnotation ? params.onDeleteAnnotation : External.onDeleteAnnotation,
+
+    // callbacks and event handlers
+    onSubmitAnnotation: params.onSubmitAnnotation ? osCB : External.onSubmitAnnotation,
+    onUpdateAnnotation: params.onUpdateAnnotation ? ouCB : External.onUpdateAnnotation,
+    onDeleteAnnotation: params.onDeleteAnnotation ? odCB : External.onDeleteAnnotation,
     onSkipTask: params.onSkipTask ? params.onSkipTask : External.onSkipTask,
     onUnskipTask: params.onUnskipTask ? params.onUnskipTask : External.onUnskipTask,
     onSubmitDraft: params.onSubmitDraft,
-    onTaskLoad: params.onTaskLoad ? params.onTaskLoad : External.onTaskLoad,
-    onLabelStudioLoad: params.onLabelStudioLoad ? params.onLabelStudioLoad : External.onLabelStudioLoad,
+    onTaskLoad: params.onTaskLoad || External.onTaskLoad,
+    onLabelStudioLoad: params.onLabelStudioLoad || External.onLabelStudioLoad,
     onEntityCreate: params.onEntityCreate || External.onEntityCreate,
     onEntityDelete: params.onEntityDelete || External.onEntityDelete,
     onGroundTruth: params.onGroundTruth || External.onGroundTruth,
@@ -157,6 +77,7 @@ function configureApplication(params) {
     onStorageInitialized: params.onStorageInitialized || External.onStorageInitialized,
     onNextTask: params.onNextTask || External.onNextTask,
     onPrevTask: params.onPrevTask || External.onPrevTask,
+
     // other settings aka flags
     forceAutoAnnotation: params.forceAutoAnnotation ?? false,
     forceAutoAcceptSuggestions: params.forceAutoAcceptSuggestions ?? false,
@@ -165,4 +86,4 @@ function configureApplication(params) {
   return options;
 }
 
-export default { rootElement, getExample, getData, configureApplication };
+export default { getData, getState, rootElement, configureApplication };
