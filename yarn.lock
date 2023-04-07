@@ -8529,8 +8529,9 @@ react-test-renderer@^17.0.0:
     scheduler "^0.20.2"
 
 react-virtualized-auto-sizer@^1.0.6:
-  version "1.0.6"
-  resolved "https://registry.yarnpkg.com/react-virtualized-auto-sizer/-/react-virtualized-auto-sizer-1.0.6.tgz#66c5b1c9278064c5ef1699ed40a29c11518f97ca"
+  version "1.0.12"
+  resolved "https://registry.yarnpkg.com/react-virtualized-auto-sizer/-/react-virtualized-auto-sizer-1.0.12.tgz#4ab4d622115a74c85f9ead86301fa3a3bfa917f6"
+  integrity sha512-ELTFQieCCGZ7zz8aEkFnAaMUsAlaOMk/thVcyVlEYtWnlloM49iRFLvirrDIPd8rKwuaWD0TaODHRizMsmkdsA==
 
 react-window@^1.8.6:
   version "1.8.6"
